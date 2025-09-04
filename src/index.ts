@@ -11,9 +11,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 
-app.get('/hi', (req, res) => {
-    res.send({ message: "hi" });
-});
 app.use('/api', rootRouter);
 console.log("in main");
 export const prismaClient = new PrismaClient({

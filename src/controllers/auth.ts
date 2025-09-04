@@ -1,10 +1,27 @@
 import { Request, Response } from "express"
 import { prismaClient } from "..";
-import {hashSync} from "bcrypt";
-export const login =(req:Request, res:Response) => {
-   res.send('login works'); 
-}
+import {hashSync, compareSync} from "bcrypt";
+import * as jwt from 'jsonwebtoken';
+import { JWT_SECRET } from "../secrets";
 
+export const login = async(req:Request, res:Response) => {
+    const {email, password} = req.body
+    //checking user if exists
+    let user = await prismaClient.user.findFirst({where:{email}});
+    if(!user){
+        throw Error('User does not exists');
+    }
+    
+    if(!compareSync(password, user.password)){
+        throw Error('Incorrect password')
+    }
+    const token = jwt.sign({
+        userId:user.id,
+
+    }, JWT_SECRET);
+
+    res.json({user, token}); 
+}
 export const signup = async(req:Request, res:Response) => {
     const {email, password, name} = req.body
     //checking user if exists
