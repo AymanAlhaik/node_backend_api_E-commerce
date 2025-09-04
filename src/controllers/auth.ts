@@ -3,6 +3,8 @@ import { prismaClient } from "..";
 import {hashSync, compareSync} from "bcrypt";
 import * as jwt from 'jsonwebtoken';
 import { JWT_SECRET } from "../secrets";
+import { BadRequest } from "../exceptions/badRequest";
+import { ErrorCode } from "../exceptions/root";
 
 export const login = async(req:Request, res:Response) => {
     const {email, password} = req.body
@@ -27,7 +29,7 @@ export const signup = async(req:Request, res:Response) => {
     //checking user if exists
     let user = await prismaClient.user.findFirst({where:{email}});
     if(user){
-        throw Error('User already exists');
+        throw new BadRequest('User already exists', ErrorCode.USER_ALREADY_EXISTS);
     }
     
     user = await prismaClient.user.create({
