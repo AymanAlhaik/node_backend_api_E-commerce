@@ -3,6 +3,8 @@ import { PORT } from './secrets';
 import rootRouter from './routes';
 import { PrismaClient } from './generated/prisma';
 import { errorMiddleware } from './middlewares/errors';
+import ar from 'zod/v4/locales/ar.js';
+import { SignUpSchema } from './schema/users';
 const app: Express = express();
 app.use(express.json());
 
@@ -13,7 +15,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use('/api', rootRouter);
-console.log("in main");
+
 export const prismaClient = new PrismaClient({
     log: ['query']
 });

@@ -1,43 +1,46 @@
-import { Request, Response } from "express"
+import { NextFunction, Request, Response } from "express"
 import { prismaClient } from "..";
-import {hashSync, compareSync} from "bcrypt";
+import { hashSync, compareSync } from "bcrypt";
 import * as jwt from 'jsonwebtoken';
 import { JWT_SECRET } from "../secrets";
 import { BadRequest } from "../exceptions/badRequest";
 import { ErrorCode } from "../exceptions/root";
+import { UnprocessableEntity } from "../exceptions/validation";
+import { SignUpSchema } from "../schema/users";
 
-export const login = async(req:Request, res:Response) => {
-    const {email, password} = req.body
+export const login = async (req: Request, res: Response) => {
+    const { email, password } = req.body
     //checking user if exists
-    let user = await prismaClient.user.findFirst({where:{email}});
-    if(!user){
+    let user = await prismaClient.user.findFirst({ where: { email } });
+    if (!user) {
         throw Error('User does not exists');
     }
-    
-    if(!compareSync(password, user.password)){
+
+    if (!compareSync(password, user.password)) {
         throw Error('Incorrect password')
     }
     const token = jwt.sign({
-        userId:user.id,
+        userId: user.id,
 
     }, JWT_SECRET);
 
-    res.json({user, token}); 
+    res.json({ user, token });
 }
-export const signup = async(req:Request, res:Response) => {
-    const {email, password, name} = req.body
+export const signup = async (req: Request, res: Response, next: NextFunction) => {
+    // //validating entity first:
+    // SignUpSchema.parse(req.body);
+    const { email, password, name } = req.body
     //checking user if exists
-    let user = await prismaClient.user.findFirst({where:{email}});
-    if(user){
-        throw new BadRequest('User already exists', ErrorCode.USER_ALREADY_EXISTS);
+    let user = await prismaClient.user.findFirst({ where: { email } });
+    if (user) {
+        next(new BadRequest('User already exists', ErrorCode.USER_ALREADY_EXISTS));
     }
-    
     user = await prismaClient.user.create({
-        data:{
+        data: {
             name,
             email,
-            password:hashSync(password, 10)
+            password: hashSync(password, 10)
         }
     });
-    res.json(user); 
+    res.json(user);
 }
