@@ -4,9 +4,8 @@ import { ZodSchema } from "zod";
 import { UnprocessableEntity } from "../exceptions/validation";
 import { ErrorCode } from "../exceptions/root";
 
-export const validate =
-  (schema: ZodSchema) =>
-  (req: Request, res: Response, next: NextFunction) => {
+export const validate = (schema: ZodSchema):any =>
+  (req: Request, res: Response, next: NextFunction):any => {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
